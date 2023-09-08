@@ -1,19 +1,16 @@
 from tqdm.notebook import tqdm
 from time import time, sleep
 from ast import literal_eval
-
-
 import os, json, argparse
 import re
-from langchain.output_parsers import StructuredOutputParser, ResponseSchema # 用于解析 LLM output
-from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate # 用于生成 LLM message prompt
+from langchain.output_parsers import StructuredOutputParser, ResponseSchema 
+from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate 
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import (
-    ChatPromptTemplate, # 基于 messages 生成最终输入到模型中的 prompt;
+    ChatPromptTemplate, 
     AIMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-
 
 os.environ["OPENAI_API_KEY"] = "API_KEY" 
 summarizer = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3, n=1, max_tokens=512)
@@ -43,8 +40,6 @@ class JsonExtractor():
         return '```json'+text+'```'
     
     def __call__(self, text: str) -> dict:
-
-        # 用于解析 LLM output
         text = self._remove_space(self._extract(text))
         try:
             return literal_eval(text)
