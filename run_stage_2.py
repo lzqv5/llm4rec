@@ -1,6 +1,8 @@
 from tqdm.notebook import tqdm
 from time import time, sleep
 from ast import literal_eval
+
+
 import os, json, argparse
 import re
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema # 用于解析 LLM output
@@ -11,6 +13,7 @@ from langchain.prompts.chat import (
     AIMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
+
 
 os.environ["OPENAI_API_KEY"] = "API_KEY" 
 summarizer = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3, n=1, max_tokens=512)
@@ -50,24 +53,24 @@ class JsonExtractor():
             return literal_eval(self._refine_property_name_quotes(text))
 
 def build_chat_prompt(prompt_idx=0):
-    human_message_prompt = """你是一个专业的HR，给定一对(职位描述,简历)，你能够判断该岗位描述和该简历是否匹配并进行评论。
+    human_message_prompt = """You are a professional HR who can determine whether a job description and a curriculum vitae match and provide comments.
 
-    给你如下格式的输入：
+    You are provided with inputs in the following format:
     ```
     job description:
     a paragraph of text
 
-    resume:
+    curriculum vitae:
     a paragraph of text
     ```
 
-    你需要输出以下内容：
-    1. 简历和岗位的综合匹配分数（百分制，0-100分）
-    2. 简历和岗位在“教育背景”方面的匹配分数（百分制，0-100分）
-    3. 简历和岗位在“工作经历”方面的匹配分数（百分制，0-100分）
-    4. 简历和岗位在“专业技能”方面的匹配分数（百分制，0-100分）
+    Your task is to output the following:
+    1. An overall matching score between the curriculum vitae and the job description (0-100).
+    2. A matching score between the educational background in the curriculum vitae and the job description (0-100).
+    3. A matching score between the work experience in the curriculum vitae and the job description (0-100).
+    4. A matching score between the professional skills in the curriculum vitae and the job description (0-100).
 
-    输出结果以如下键值对的JSON格式表示：
+    The results should be represented in a JSON format with the following key-value pairs:
     ```
     "overall": a number between 0 and 100,
     "education": a number between 0 and 100,
@@ -80,27 +83,24 @@ def build_chat_prompt(prompt_idx=0):
 
     """
     if prompt_idx == 0:
-        human_message_prompt += """你在匹配过程中应该关注岗位描述中的"工作经历"，"职位描述"和"职位要求"的内容。你也需要关注简历中的"工作年限"，"教育背景"和"工作经历"的内容。
-        是否匹配的依据应根据输入的岗位描述和简历内容动态生成。
-        你应该提供有关匹配过程的任何其他信息或反馈，并对简历中可能存在的错误或缺失信息进行自动处理。如果有错误，你应该跳过缺失的信息并继续完成匹配。
-        你的第一个回复应该只是“已理解”。
+        human_message_prompt += """You should pay attention to the content of ``work experience'', ``job description'', and ``job requirements'' in the job description during the matching process. You also need to pay attention to the content of ``work experience'', ``educational background'', and ``work experience'' in the curriculum vitae.
+        The basis for matching should be dynamically generated based on the input job description and curriculum vitae content.
+        You should provide any other information or feedback about the matching process and automatically handle any errors or missing information that may exist in the curriculum vitae. If there are errors, you should skip the missing information and continue to complete the matching.
+        Your first response should be 'Understood.'.
         """
     elif prompt_idx == 1:
-        human_message_prompt += """请根据提供的简历和岗位描述，按照上述格式输出多个0-100之间的各字段匹配分数。你可以处理各种类型的文本，并且请在没有足够信息的情况下给出合理的反馈。
-        你的第一个回复应该只是“已理解”。
-        """
+        human_message_prompt += """customized emphasis 1"""
     else:
-        human_message_prompt += """你需要按照“教育背景”、“工作经历”和“专业技能”三个指标，基于简历和岗位的匹配程度，返回三个指标的匹配分数，并返回一个能总体上反映简历与岗位匹配程度的综合分数。
-        你的第一个回复应该只是“已理解”。
-        """
-    assistant_message_prompt = "已理解。"
+        human_message_prompt += """customized emphasis 2"""
+    # more customized emphases if needed.
+    assistant_message_prompt = "Understood."
     input_prompt = """job description:
     {jd}
 
-    resume:
+    curriculum vitae:
     {cv}
 
-    请输出JSON格式的结果
+    Please output the results in JSON format.
     """
     human_message_prompt_template = HumanMessagePromptTemplate.from_template(human_message_prompt)
     assistant_message_prompt_template = AIMessagePromptTemplate.from_template(assistant_message_prompt)
@@ -109,19 +109,19 @@ def build_chat_prompt(prompt_idx=0):
     return chat_prompt
 
 def build_comment_prompt():
-    summarize_prompt = """你是一个专业的HR。现在，有数位专家对同一份简历进行了评论。你需要根据这些评论，生成一段简短的评语，来描述这份简历的优势和不足。
+    summarize_prompt = """You are a professional HR. Now, several experts have commented on the same curriculum vitae. You need to generate a short comment based on these comments to describe the strengths and weaknesses of this curriculum vitae.
 
-    输出结果以如下键值对的JSON格式表示:
+    The results should be represented in a JSON format with the following key-value pairs:
     ```
     "comments": a comment paragraph
     ```
 
-    以下是这些专家的评论:
+    The following are the comments of experts:
     ```
     {comments}
     ```
 
-    请输出JSON格式的结果
+    Please output the results in JSON format.
     """
     prompt= ChatPromptTemplate.from_messages([HumanMessagePromptTemplate.from_template(summarize_prompt)])
     return prompt
