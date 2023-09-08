@@ -59,7 +59,6 @@ if __name__ == "__main__":
     else: model = BertModel.from_pretrained('hfl/chinese-roberta-wwm-ext')
     model_mlm = BertForMaskedLM.from_pretrained('hfl/chinese-roberta-wwm-ext')
     model_mlm.load_state_dict(torch.load(f"./models/MLMBasedOnCVJD_lr_1e-05__epoch_{args.mlm_epoch}.pth", map_location='cpu'))
-    # 继承自监督预训练中更新的参数
     model.encoder = deepcopy(model_mlm.bert.encoder)
     model.embeddings = deepcopy(model_mlm.bert.embeddings)
     model_mlm = None
@@ -71,7 +70,6 @@ if __name__ == "__main__":
     lr = 1e-5
     adam_epsilon = 1e-8
     weight_decay = 1e-5
-    # max_epoch = 4
     max_epoch = args.epochs
 
     step_tot = (len(train_set) // gradient_accumulation_steps // batch_size_per_gpu // n_gpu) * max_epoch
