@@ -1,8 +1,6 @@
 from tqdm.notebook import tqdm
 from time import time, sleep
 from ast import literal_eval
-
-
 import os, json, argparse
 import re
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema # 用于解析 LLM output
@@ -13,7 +11,6 @@ from langchain.prompts.chat import (
     AIMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-
 
 os.environ["OPENAI_API_KEY"] = "API_KEY" 
 summarizer = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3, n=1, max_tokens=512)
@@ -166,16 +163,8 @@ def single_session_processing(generation: list, output_parser: JsonExtractor):
 def sessions_processing(generations: list, output_parser: JsonExtractor):
     return [single_session_processing(gen, output_parser) for gen in generations]
 
-#! 付费用户使用频率 - 3,500 RPM or 90,000 TPM - chat
-#! 假设每次调用token数有预估, 那么 TPM 可以转化为等价的 RPM
-
-# 给定 jd, cv 和 candidates, 自动化地生成大模型排序后的结果
 def resorting(jd, cv, candidates, chat_model, chat_prompt, output_parser,  rate_limit_per_min=3500, tokens_per_min=90000, token_per_req=4000, delta=2.5):
-    #! 每执行一次 resorting，就调用一次或者多次 LLM api;
-    #! 调用 api 的实际频率要看实际调用 OpenAI API 的频率，而不是 LangChain 调用的频率;
-    #! 需要限制 resorting 的调用频率
     if not isinstance(chat_prompt, list):
-        # 只有一个 prompt
         n = chat_model.n
         rpm = min(rate_limit_per_min, tokens_per_min//token_per_req)
         step = rpm//n
@@ -204,12 +193,10 @@ def resorting(jd, cv, candidates, chat_model, chat_prompt, output_parser,  rate_
             messages_list = [[prompt.format_prompt(jd=jd, cv=cand).to_messages() for cand in candidates[i:i+step]] for i in range(0,candidates_nums,step)]
             generations = []
             for messages in messages_list:  # 1 batch/min
-                # print("Begin")
                 start_time = time()
                 responses_of_generation = chat_model.generate(messages)
                 generations.extend(responses_of_generation.generations)
                 end_time = time()
-                # print("End")
                 diff = end_time-start_time
                 if diff < 60:
                     print("sleeping...")
@@ -223,7 +210,6 @@ def resorting(jd, cv, candidates, chat_model, chat_prompt, output_parser,  rate_
     cands_new.sort(key=lambda item:item[1].get('overall',0),reverse=True)
     return [jd, cv, cands_new]
             
-
 def resort_self_consistency(chat_model, recs, output_parser: JsonExtractor):
     chat_prompt = build_chat_prompt(prompt_idx=0)
     resorted_recs = []
