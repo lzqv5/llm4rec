@@ -7,6 +7,7 @@ import mlm_utils
 
 parser = argparse.ArgumentParser(description='Train Baselines')
 parser.add_argument('--model_name', type=str, required=True, help='set the model\'s name ')
+parser.add_argument('--data_path', type=str, required=True, help='set the data path ')
 parser.add_argument('--epochs', type=int, required=True, help='set the epochs')
 parser.add_argument('--lr', type=float, required=True, help='set the learning rate')
 parser.add_argument('--gpu_id', type=int, required=True, help='set the gpu id')
@@ -73,7 +74,8 @@ if __name__ == "__main__":
     model.to(device)
 
     #^ convert comments to tokens and then to chunks
-    data_path = './data/fullText_train.json'
+    # data_path = './data/fullText_train.json'
+    data_path = args.data_path
     with open(data_path) as f:
         cv_jds = json.load(f)
     corpus = []
