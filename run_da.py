@@ -58,12 +58,11 @@ if __name__ == "__main__":
     device = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
 
     #^ params
-    batch_size_per_gpu = 12
+    batch_size_per_gpu = 48
     n_gpu = 1
     gradient_accumulation_steps = 3
     adam_epsilon = 1e-8
     weight_decay = 1e-5
-    # max_epoch = 5
     warmup_ratio = 0.1
 
 
@@ -83,6 +82,7 @@ if __name__ == "__main__":
         corpus.extend([cv,jd])
     generator = prepareSentences(corpus) 
     chunks = [chunk for chunk in generator]
+    #^ It takes about 2h...
     tokenized_texts = mlm_utils.whole_word_masking_zh(chunks, tokenizer, max_length=512, wwm_probability=0.15)
    
     #^ dataset
