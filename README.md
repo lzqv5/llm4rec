@@ -29,7 +29,7 @@ As described in the paper, our framework comprises two stages. In the first-stag
 
 `run_da.py` and `run_cl.py` are two training programs for domain adaptation and contrastive learning respectively (\# 0 in Fig. [1](#framework)). After sequential execution, we can obtain the contrastive backbone $M_\text{CL}$.
 
-`run_stage_1.py` and `run_stage_2.py` are two programs for *Candidate Generation* (\# 1 in Fig. [1](#framework)) and *LLM-based Recommendation* ((\# 2 in Fig. [1](#framework).)) respectively.
+`run_stage_1.py` and `run_stage_2.py` are two programs for *Candidate Generation* (\# 1 in Fig. [1](#framework)) and *LLM-based Recommendation* (\# 2 in Fig. [1](#framework).) respectively.
 
 `mlm_utils.py` and `utils.py` contain some utility functions useful in training.
 
