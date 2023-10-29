@@ -2,12 +2,13 @@
 This is the relevant code repository for reproducing the models and pipeline described in *A ChatGPT Enhanced Two-stage Framework for Person-Job Fit in Talent Recruitment*.
 
 ## Framework
-As described in the paper, our framework comprises two stages. In the first-stage, we generate primary curriculum vitae (CV) candidates $C_i=\left\{\text{CV}_{i_j}\right\}_{j=1}^{k}$ for the given target job description $\text{JD}_i$ through the contrastive backbone $M_\text{CL}$. Subsequently, in the second stage, we utilize [ChatGPT](https://openai.com/chatgpt) to analyze and sort $C_i$ to provide a better CV recommendations for $\text{JD}_i$. The contrastive backbone $M_\text{CL}$ is built from Domain Adaptation (DA) and Contrastive Learning (CL). The following figure illustrates  the framework clearly. More details are available in the paper.
+As described in the paper, our framework comprises two stages. In the first-stage, we generate primary curriculum vitae (CV) candidates $C_i=\left[CV_{i_j}\right]\_{j=1}^{k}$ for the given target job description $JD_i$ through the contrastive backbone $M_\text{CL}$. Subsequently, in the second stage, we utilize [ChatGPT](https://openai.com/chatgpt) to analyze and sort $C_i$ to provide a better CV recommendations for $JD_i$. The contrastive backbone $M_\text{CL}$ is built from Domain Adaptation (DA) and Contrastive Learning (CL). The following figure illustrates  the framework clearly. More details are available in the paper.
 
 <p align="center">
     <br>
     <!-- <img src="./figures/framework.png" width="500"/> -->
-    <img src="./figures/framework.png" id="framework"/>
+<!--     <img src="./figures/framework.png" id="framework"/> -->
+    <img src="./figures/pipeline.png" id="framework"/>
       <figcaption style="text-align: center;"> Figure 1: The framework of our method. </figcaption>
     <br>
 </p>
@@ -27,9 +28,9 @@ As described in the paper, our framework comprises two stages. In the first-stag
 | utils.py |
 | requirements.txt |
 
-`run_da.py` and `run_cl.py` are two training programs for domain adaptation and contrastive learning respectively (\# 0 in Fig. [1](#framework)). After sequential execution, we can obtain the contrastive backbone $M_\text{CL}$.
+`run_da.py` and `run_cl.py` are two training programs for domain adaptation and contrastive learning respectively (*Phase 1* in Fig. [1](#framework)). After sequential execution, we can obtain the contrastive backbone $M_\text{CL}$.
 
-`run_stage_1.py` and `run_stage_2.py` are two programs for *Candidate Generation* (\# 1 in Fig. [1](#framework)) and *LLM-based Recommendation* (\# 2 in Fig. [1](#framework).) respectively.
+`run_stage_1.py` and `run_stage_2.py` are two programs for *Candidate Generation* and *LLM-based Recommendation* respectively (*Phase 2* in Fig. [1](#framework)).
 
 `mlm_utils.py` and `utils.py` contain some utility functions useful in training.
 
@@ -43,14 +44,8 @@ pip install -r requirements.txt
 ```
 
 ### Fine-tuning
-
 #### Data Format
-
-The input data should be in the following format:
-$$
-[[\text{text}_\text{CV}^{(1)}, \text{text}_\text{JD}^{(1)}, \text{state}^{(1)}], [\text{text}_\text{CV}^{(2)}, \text{text}_\text{JD}^{(2)}, \text{state}^{(2)}], \dots]
-$$
-Actually the $\text{state}$ is only useful for data preprocessing. It does not matter if it's missing. Just make sure there is no error when reading the data for training.
+The input data should be in the following format: $[[\text{text}\_\text{JD}\^\text{(1)}, \text{text}\_\text{CV}\^\text{(1)}, \text{state}\^\text{(1)}], [\text{text}\_\text{JD}\^\text{(2)}, \text{text}\_\text{CV}\^\text{(2)}, \text{state}\^\text{(2)}], \dots]$. Actually the $\text{state}$ is only useful for data preprocessing. It does not matter if it's missing. Just make sure there is no error when reading the data for training.
 
 #### CMD
 
